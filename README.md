@@ -1,4 +1,6 @@
-CPU intensive: Decrease the width to increase performance in exchange for an overall loss in viewing size
+You can change the width, height, sensitivity, number of bands (peaks), and color through the "Edit variables" context menu option
+
+When launching the skin for the first time, the spectrum width is automatically adjusted based on your computer's CPU usage
 
 Some "lost" pixels can appear based on the spectrum width (Regardless if it is a multiple of the number of bands used for interpolation)
 
