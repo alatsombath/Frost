@@ -1,3 +1,0 @@
-[MeterBackgroundRepeat]
-Meter=Bar
-MeterStyle=MeterBackground
