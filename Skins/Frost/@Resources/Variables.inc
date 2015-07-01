@@ -2,11 +2,11 @@
 
 ; Save this text file and refresh the skin after editing these settings!
 
-Bands=64
+Bands=40
 ; Number of peaks to interpolate from
 ; Activate the GenerateMeasures.ini file after changing this value
 
-Width=500
+Width=400
 Height=125
 ; "Real" spectrum dimensions
 ; Activate the GenerateMeters.ini file after changing these values
@@ -17,17 +17,17 @@ Scale=2
 Color=161,186,220
 ; Don't add an alpha value at the end
 
-AverageSize=5
+AverageSize=4
 ; Number of past measure values to average from, increasing continuity
 
 Port=Output
 ID=""
-FFTSize=9216
+FFTSize=8192
 FFTOverlap=(#FFTSize#*0.5)
 FFTAttack=0
-FFTDecay=250
+FFTDecay=300
 FreqMin=20
-FreqMax=16000
+FreqMax=20000
 Sensitivity=35
 ; http://docs.rainmeter.net/manual-beta/plugins/audiolevel
 
