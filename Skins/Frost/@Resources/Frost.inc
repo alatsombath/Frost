@@ -1,21 +1,14 @@
 [Rainmeter]
 Update=16
 DefaultUpdateDivider=-1
-Group=Frost
-RightMouseDownAction=[!SkinCustomMenu]
+Group=#SkinGroup#
+OnCloseAction=[!RefreshGroup #SkinGroup#]
 
-ContextTitle="Change color..."
-ContextAction=[!ActivateConfig "Frost\InputSolidColor"]
-ContextTitle2="Display settings..."
-; Each skin file uses a specific flip setting
-ContextAction2=[!WriteKeyValue Variables Flip #Flip# "#@#Variables.inc"][!WriteKeyValue Variables Config "#CURRENTCONFIG#" "#@#Variables.inc"][!WriteKeyValue Variables ConfigPath "#CURRENTPATH##CURRENTFILE#" "#@#Variables.inc"][!ActivateConfig "Frost\ContextMenus" "Display.ini"]
-ContextTitle3="Audio settings..."
-ContextAction3=[!WriteKeyValue Variables Config "#CURRENTCONFIG#" "#@#Variables.inc"][!WriteKeyValue Variables ConfigPath "#CURRENTPATH##CURRENTFILE#" "#@#Variables.inc"][!ActivateConfig "Frost\ContextMenus" "Audio.ini"]
-ContextTitle4=---
-ContextTitle5="Edit local settings..."
-ContextAction5=["Notepad" "#CURRENTPATH##CURRENTFILE#"]
-ContextTitle6="Edit global settings..."
-ContextAction6=["Notepad" "#@#Variables.inc"]
+; Since each skin file has some specific settings, their config name and settings should be written to the global Variables file for access
+ContextTitle="Open settings window"
+ContextAction=[!WriteKeyValue Variables Flip #Flip# "#@#Variables.inc"][!WriteKeyValue Variables Horizontal #Horizontal# "#@#Variables.inc"][!WriteKeyValue Variables Invert #Invert# "#@#Variables.inc"][!WriteKeyValue Variables Channel #Channel# "#@#Variables.inc"][!WriteKeyValue Variables Port #Port# "#@#Variables.inc"][!WriteKeyValue Variables ID "#ID#" "#@#Variables.inc"][!WriteKeyValue Variables Config "#CURRENTCONFIG#" "#@#Variables.inc"][!WriteKeyValue Variables ConfigPath "#CURRENTPATH##CURRENTFILE#" "#@#Variables.inc"][!ActivateConfig "#ROOTCONFIG#\SettingsWindow"]
+ContextTitle2="Edit variables"
+ContextAction2=["#@#Variables.inc"]
 
 [MeasureAudio]
 Measure=Plugin
@@ -35,7 +28,7 @@ UpdateDivider=1
 
 ; Hide meters and disable measures when idle
 IfCondition=(MeasureAudio < 0.000000000000000001)
-IfTrueAction=[!DisableMeasure MeasureAudio][!DisableMeasure ScriptFrost][!HideMeterGroup Bars][!HideMeter BoundingBox]
+IfTrueAction=[!DisableMeasure MeasureAudio][!DisableMeasure ScriptFrost][!HideMeterGroup Rotators][!HideMeter BoundingBox]
 
 [Standby]
 Measure=Plugin
@@ -47,26 +40,10 @@ IfConditionMode=1
 
 ; Show meters and enable measures when sound begins playing
 IfCondition=(Standby > 0.000000000000000001)
-IfTrueAction=[!EnableMeasure MeasureAudio][!EnableMeasure ScriptFrost][!ShowMeterGroup Bars][!ShowMeter BoundingBox]
+IfTrueAction=[!EnableMeasure MeasureAudio][!EnableMeasure ScriptFrost][!ShowMeterGroup Rotators][!ShowMeter BoundingBox]
 
-; Gradient bar meter is always full when measure value is 1
-[One]
-Measure=Calc
-Formula=1
-
-; Include band measures and meters
 @Include=#@#BandMeasures.inc
 @Include2=#@#BandMeters.inc
-
-[ScriptFrost]
-Measure=Script
-ScriptFile=#@#Frost.lua
-Sub=Repeat
-Index=1
-Limit=(#Bands#-1)
-MeasureName=MeasureAudioRepeat
-MeterName=MeterBarRepeat
-UpdateDivider=1
 
 [SetMeasureOptions]
 Measure=Calc
@@ -75,13 +52,31 @@ OnUpdateAction=[!SetOptionGroup Audio Channel #Channel#][!SetOptionGroup Audio A
 [SetMeterOptions]
 Measure=Script
 ScriptFile=#@#SetMeterOptions.lua
-Sub=Repeat
-MeterName=MeterBarRepeat
 
-; Reveal the transformation through an invisible meter
+[ScriptFrost]
+Measure=Script
+ScriptFile=#@#Frost.lua
+MeasureBaseName=MeasureAudio
+MeterBaseName=MeterRotator
+hLowerLimit=#FirstBandIndex#
+hUpperLimit=(#Bands#-1)
+InterpolateSpan=(Ceil(#Width# / (#Bands# - #FirstBandIndex# - 1)))
+SpectrumSize=#Width#
+MeterDimSize=#Height#
+SmoothEnds=#SmoothEnds#
+SetH=(#Horizontal# = 0 ? 1 : 0)
+UpdateDivider=1
+
+[Matrix]
+Measure=String
+String="(#Horizontal# = 0 ? #Scale# : (#Flip# = 0 ? #Scale# : -#Scale#));0;0;(#Horizontal# = 0 ? (#Flip# = 0 ? -#Scale# : #Scale#) : #Scale#);(#Horizontal# = 0 ? 0 : (#Flip# = 0 ? 0 : (#Height# * #Scale#)));(#Horizontal# = 0 ? (#Flip# = 0 ? (#Height# * #Scale#) : 0) : 0)"
+
+; Reveal the transformation by expanding the skin window through an invisible meter
 [BoundingBox]
-Meter=Bar
-W=(#Width#*#Scale#)
-H=(#Height#*#Scale#)
-BarColor=255,255,255,0
-MeasureName=One
+Meter=Image
+W=((#Horizontal# = 0 ? #Width# : #Height#) * #Scale#)
+H=((#Horizontal# = 0 ? #Height# : #Width#) * #Scale#)
+
+[MeasureZero]
+Measure=Calc
+Formula=0

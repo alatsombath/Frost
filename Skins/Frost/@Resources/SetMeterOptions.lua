@@ -1,46 +1,27 @@
 function Update()
+  local width = SKIN:ParseFormula(SKIN:GetVariable("Width"))
+  local height = SKIN:ParseFormula(SKIN:GetVariable("Height"))
+  local horizontal = SKIN:ParseFormula(SKIN:GetVariable("Horizontal"))
+  
+  for i = 1, width do
+	SKIN:Bang("!SetOption", "MeterRotator" .. i, "Group", "Rotators")
+    SKIN:Bang("!UpdateMeter", "MeterRotator" .. i)
 	
-	-- Parse these values only once to be easily read on every update cycle
-	local Width=SKIN:ParseFormula(SKIN:ReplaceVariables("#Width#"))
-	local Height=SKIN:ParseFormula(SKIN:ReplaceVariables("#Height#"))
-	local Color=SKIN:ReplaceVariables("#Color#")
-	
-	local Meter={}
-	local gsub,Sub,MeterName=string.gsub,SELF:GetOption("Sub"),SELF:GetOption("MeterName")
-	for i=1,Width do
-		Meter[i]=(gsub(MeterName,Sub,i))
-		SKIN:Bang("!SetOption",Meter[i],"Group","Bars")
-		SKIN:Bang("!UpdateMeter",Meter[i])
-		
-		SKIN:Bang("!SetOption",Meter[i],"X",i-1)
-	end
-	
-	SKIN:Bang("!SetOptionGroup","Bars","W",1)
-	
-	SKIN:Bang("!SetOptionGroup","Bars","TransformationMatrix","#Scale#;0;0;(#Flip# = 0 ? -#Scale# : #Scale#);0;(#Flip# = 0 ? (#Height#*#Scale#) : 0)")
-	SKIN:Bang("!UpdateMeterGroup","Bars")
-	
-	-- Unset the matrix after the meters have been transformed
-	SKIN:Bang("!SetOptionGroup","Bars","TransformationMatrix","")
-	
-	SKIN:Bang("!SetOptionGroup","Bars","BarColor","255,0,0,0")
-	SKIN:Bang("!SetOptionGroup","Bars","GradientAngle",90)
-	
-	-- If it's an RGB color
-	if Color:find(",") then
-	
-		SKIN:Bang("!SetOptionGroup","Bars","SolidColor","#Color#,255")
-		SKIN:Bang("!SetOptionGroup","Bars","SolidColor2","#Color#,0")
-		
-	-- If it's a HEX color
-	else
-		
-		SKIN:Bang("!SetOptionGroup","Bars","SolidColor","#Color#FF")
-		SKIN:Bang("!SetOptionGroup","Bars","SolidColor2","#Color#00")
-		
-	end
-	
-	SKIN:Bang("!SetOptionGroup","Bars","UpdateDivider",1)
-	SKIN:Bang("!UpdateMeterGroup","Bars")
-	
+	if horizontal == 0 then SKIN:Bang("!SetOption", "MeterRotator" .. i, "X", i-1)
+	else SKIN:Bang("!SetOption", "MeterRotator" .. i, "Y", i-1) end
+  end
+  
+  if horizontal == 0 then
+    SKIN:Bang("!SetOptionGroup", "Rotators", "GradientAngle", 90)
+    SKIN:Bang("!SetOptionGroup", "Rotators", "W", 1)
+  else SKIN:Bang("!SetOptionGroup", "Rotators", "H", 1) end
+  
+  SKIN:Bang("!SetOptionGroup", "Rotators", "SolidColor", "#Color#,255")
+  SKIN:Bang("!SetOptionGroup", "Rotators", "SolidColor2", "#Color#,0")
+  
+  SKIN:Bang("!SetOptionGroup", "Rotators", "TransformationMatrix", SKIN:GetMeasure("Matrix"):GetStringValue())
+  SKIN:Bang("!UpdateMeterGroup", "Rotators")
+  SKIN:Bang("!SetOptionGroup", "Rotators", "TransformationMatrix", "")
+  
+  SKIN:Bang("!UpdateMeterGroup","Rotators")
 end

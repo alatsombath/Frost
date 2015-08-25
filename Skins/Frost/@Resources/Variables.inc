@@ -1,37 +1,43 @@
 [Variables]
 
-; Save this text file and refresh the skin after editing these settings!
+Bands=36
+; Number of peaks to interpolate between - Activate Frost\GenerateMeasures skin after changing this value
 
-Bands=40
-; Number of peaks to interpolate from
-; Activate the GenerateMeasures.ini file after changing this value
+Color=192,224,192
+; Don't add an alpha value at the end
 
-Width=400
-Height=125
-; "Real" spectrum dimensions
-; Activate the GenerateMeters.ini file after changing these values
+Width=491
+Height=175
+; "Real" spectrum dimensions - Activate Frost\GenerateMeters skin after changing these values
 
 Scale=2
 ; Magnification of the real spectrum, increasing viewing size and performance at the expense of quality
 
-Color=161,186,220
-; Don't add an alpha value at the end
+SmoothEnds=1
+; Smooth the ends of the spectrum towards zero
 
 AverageSize=4
-; Number of past measure values to average from, increasing continuity
+; "Smoothness" - Number of past measure values used to increase continuity
 
-Port=Output
-ID=""
-FFTSize=8192
+FFTSize=6144
 FFTOverlap=(#FFTSize#*0.5)
 FFTAttack=0
-FFTDecay=300
+FFTDecay=275
 FreqMin=20
 FreqMax=20000
-Sensitivity=35
+Sensitivity=30
 ; http://docs.rainmeter.net/manual-beta/plugins/audiolevel
 
-; Context menu environment variables
+FirstBandIndex=1
+
+; Environment variables for settings window
+SkinGroup=Frost
 Config=Frost
-ConfigPath=C:\Users\YourName\My Documents\Rainmeter\Skins\Frost\Frost.ini
+ConfigPath=#ROOTCONFIGPATH#Frost.ini
+WriteVariable=Color
 Flip=0
+Horizontal=0
+Invert=0
+Channel=Avg
+Port=Output
+ID=

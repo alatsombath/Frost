@@ -1,3 +1,3 @@
-[MeterBarRepeat]
-Meter=Bar
-MeasureName=One
+[MeterRotatorRepeat]
+Meter=Rotator
+MeasureName=MeasureZero
