@@ -4,18 +4,36 @@ DefaultUpdateDivider=-1
 Group=#SkinGroup#
 OnCloseAction=[!RefreshGroup #SkinGroup#]
 
-; Since each skin file has some specific settings, their config name and settings should be written to the global Variables file for access
 ContextTitle="Open settings window"
-ContextAction=[!WriteKeyValue Variables Flip #Flip# "#@#Variables.inc"][!WriteKeyValue Variables Horizontal #Horizontal# "#@#Variables.inc"][!WriteKeyValue Variables Invert #Invert# "#@#Variables.inc"][!WriteKeyValue Variables Channel #Channel# "#@#Variables.inc"][!WriteKeyValue Variables Port #Port# "#@#Variables.inc"][!WriteKeyValue Variables ID "#ID#" "#@#Variables.inc"][!WriteKeyValue Variables Config "#CURRENTCONFIG#" "#@#Variables.inc"][!WriteKeyValue Variables ConfigPath "#CURRENTPATH##CURRENTFILE#" "#@#Variables.inc"][!ActivateConfig "#ROOTCONFIG#\SettingsWindow"]
+ContextAction=#OpenSettingsWindow#
 ContextTitle2="Edit variables"
 ContextAction2=["#@#Variables.inc"]
 
+[Variables]
+
+; Since each skin file has some specific settings, they should be written to the global Variables file for access
+EnvFlip=[!WriteKeyValue Variables Flip #Flip# "#@#Variables.inc"]
+EnvHorizontal=[!WriteKeyValue Variables Horizontal #Horizontal# "#@#Variables.inc"]
+EnvInvert=[!WriteKeyValue Variables Invert #Invert# "#@#Variables.inc"]
+EnvChannel=[!WriteKeyValue Variables Channel #Channel# "#@#Variables.inc"]
+EnvPort=[!WriteKeyValue Variables Port #Port# "#@#Variables.inc"]
+EnvID=[!WriteKeyValue Variables ID "#ID#" "#@#Variables.inc"]
+EnvConfig=[!WriteKeyValue Variables Config "#CURRENTCONFIG#" "#@#Variables.inc"]
+EnvConfigPath=[!WriteKeyValue Variables ConfigPath "#CURRENTPATH##CURRENTFILE#" "#@#Variables.inc"]
+EnvSettingsWindow=#EnvFlip##EnvHorizontal##EnvInvert#EnvChannel##EnvPort##EnvID##EnvConfig##EnvConfigPath#
+OpenSettingsWindow=#EnvSettingsWindow#[!ActivateConfig "#ROOTCONFIG#\SettingsWindow"][!Refresh "#ROOTCONFIG#\SettingsWindow"]
+
 [MeasureAudio]
 Measure=Plugin
-Group=Audio
 Plugin=AudioLevel
 Port=#Port#
 ID=#ID#
+RMSAttack=0
+RMSDecay=0
+RMSGain=1
+PeakAttack=0
+PeakDecay=0
+PeakGain=1
 FFTSize=#FFTSize#
 FFTOverlap=#FFTOverlap#
 FFTAttack=#FFTAttack#
@@ -26,21 +44,54 @@ FreqMax=#FreqMax#
 Sensitivity=#Sensitivity#
 UpdateDivider=1
 
-; Hide meters and disable measures when idle
-IfCondition=(MeasureAudio < 0.000000000000000001)
-IfTrueAction=[!DisableMeasure MeasureAudio][!DisableMeasure ScriptFrost][!HideMeterGroup Rotators][!HideMeter BoundingBox]
+[DisableProcessCheck]
+Measure=String
+String=#MusicPlayer#
+IfMatch="None"
+IfMatchAction=[!SetOption DisableProcessCheck String 1][!UpdateMeasure DisableProcessCheck]
+IfNotMatchAction=[!SetOption MeasureProcess UpdateDivider 62.5]
+
+[MeasureProcess]
+Measure=Plugin
+Plugin=Process
+ProcessName=#MusicPlayer#.exe
 
 [Standby]
 Measure=Plugin
 Plugin=AudioLevel
 Port=#Port#
 ID=#ID#
+RMSAttack=0
+RMSDecay=0
+RMSGain=1
+PeakAttack=0
+PeakDecay=0
+PeakGain=1
 UpdateDivider=1
-IfConditionMode=1
 
-; Show meters and enable measures when sound begins playing
-IfCondition=(Standby > 0.000000000000000001)
-IfTrueAction=[!EnableMeasure MeasureAudio][!EnableMeasure ScriptFrost][!ShowMeterGroup Rotators][!ShowMeter BoundingBox]
+; Toggle measures/meters based on idle audio and music player running status
+IfCondition=((Standby > 0.00001) && ((DisableProcessCheck = 1) || (MeasureProcess = 1)))
+IfTrueAction=[!EnableMeasure MeasureAudio][!EnableMeasure ScriptFrost][!EnableMeasure DynamicSensitivity][!EnableMeasure DynamicFFTDecay][!ShowFade]
+IfFalseAction=[!DisableMeasure MeasureAudio][!DisableMeasure ScriptFrost][!DisableMeasure DynamicSensitivity][!DisableMeasure DynamicFFTDecay][!HideFade]
+
+[DynamicSensitivity]
+Measure=Calc
+Formula=(#Sensitivity# - (MeasureAudio * 100 - #Sensitivity#))
+IfCondition=((DynamicSensitivity > #Sensitivity#) && (#LoudnessEqualization# = 1))
+IfTrueAction=[!SetOption MeasureAudio Sensitivity [DynamicSensitivity]]
+IfConditionMode=1
+UpdateDivider=1
+; Average over the past 3 seconds to prevent stuttering
+AverageSize=188
+
+[DynamicFFTDecay]
+Measure=Calc
+Formula=(#FFTDecay# + (MeasureAudio * 100 - #Sensitivity#) * 10)
+IfCondition=((DynamicSensitivity > #Sensitivity#) && (#LoudnessEqualization# = 1))
+IfTrueAction=[!SetOption MeasureAudio FFTDecay [DynamicFFTDecay]]
+IfConditionMode=1
+UpdateDivider=1
+AverageSize=188
 
 @Include=#@#BandMeasures.inc
 @Include2=#@#BandMeters.inc
@@ -66,6 +117,7 @@ MeterDimSize=#Height#
 SmoothEnds=#SmoothEnds#
 SetH=(#Horizontal# = 0 ? 1 : 0)
 UpdateDivider=1
+OnUpdateAction=[!Redraw]
 
 [Matrix]
 Measure=String

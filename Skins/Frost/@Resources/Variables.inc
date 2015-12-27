@@ -1,39 +1,44 @@
 [Variables]
 
-Bands=36
-; Number of peaks to interpolate between - Activate Frost\GenerateMeasures skin after changing this value
+Bands=21
+; Number of peaks - Activate Frost\GenerateMeasures skin after changing this value
 
 Color=192,224,192
-; Don't add an alpha value at the end
 
-Width=491
-Height=175
+Width=300
+Height=100
 ; "Real" spectrum dimensions - Activate Frost\GenerateMeters skin after changing these values
 
 Scale=2
-; Magnification of the real spectrum, increasing viewing size and performance at the expense of quality
+; Increases viewing size and performance at the expense of quality
 
-SmoothEnds=1
-; Smooth the ends of the spectrum towards zero
+SmoothEnds=0
+; Prevents the waveform from clipping at the edges
 
-AverageSize=4
-; "Smoothness" - Number of past measure values used to increase continuity
+AverageSize=0
+; Average sound levels over time to provide continuity
 
-FFTSize=6144
-FFTOverlap=(#FFTSize#*0.5)
+LoudnessEqualization=1
+; Increases visibility for quiet audio sources when applicable
+
+FFTSize=10240
+FFTOverlap="(#FFTSize#-256)"
 FFTAttack=0
-FFTDecay=275
+FFTDecay=300
 FreqMin=20
 FreqMax=20000
-Sensitivity=30
+Sensitivity=17
 ; http://docs.rainmeter.net/manual-beta/plugins/audiolevel
+
+MusicPlayer=None
+; Music player process name
 
 FirstBandIndex=1
 
 ; Environment variables for settings window
 SkinGroup=Frost
 Config=Frost
-ConfigPath=#ROOTCONFIGPATH#Frost.ini
+ConfigPath=#ROOTCONFIGPATH##Config#.ini
 WriteVariable=Color
 Flip=0
 Horizontal=0

@@ -1,14 +1,18 @@
 function Update()
-  local width = SKIN:ParseFormula(SKIN:GetVariable("Width"))
-  local height = SKIN:ParseFormula(SKIN:GetVariable("Height"))
+  local width, height = SKIN:ParseFormula(SKIN:GetVariable("Width")), SKIN:ParseFormula(SKIN:GetVariable("Height"))
   local horizontal = SKIN:ParseFormula(SKIN:GetVariable("Horizontal"))
+  local meterName = {}
   
-  for i = 1, width do
-	SKIN:Bang("!SetOption", "MeterRotator" .. i, "Group", "Rotators")
-    SKIN:Bang("!UpdateMeter", "MeterRotator" .. i)
-	
-	if horizontal == 0 then SKIN:Bang("!SetOption", "MeterRotator" .. i, "X", i-1)
-	else SKIN:Bang("!SetOption", "MeterRotator" .. i, "Y", i-1) end
+  for i = 1 + 1, width + 1 do
+    meterName[i] = "MeterRotator" .. i-1
+	if SKIN:GetMeter(meterName[i]) == nil then return 0 end
+    SKIN:Bang("!SetOption", meterName[i], "Group", "Rotators")
+    SKIN:Bang("!UpdateMeter", meterName[i])
+  end
+  
+  for i = 1 + 1, width + 1 do
+	if horizontal == 0 then SKIN:Bang("!SetOption", meterName[i], "X", i-2)
+	else SKIN:Bang("!SetOption", meterName[i], "Y", i-2) end
   end
   
   if horizontal == 0 then
