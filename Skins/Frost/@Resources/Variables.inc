@@ -21,19 +21,23 @@ AverageSize=0
 LoudnessEqualization=1
 ; Increases visibility for quiet audio sources when applicable
 
-FFTSize=10240
-FFTOverlap="(#FFTSize#-256)"
+FFTSize=6144
+FFTOverlap="(#FFTSize#-512)"
 FFTAttack=0
-FFTDecay=300
-FreqMin=20
-FreqMax=20000
-Sensitivity=17
+FFTDecay=240
+FreqMin=30
+FreqMax=10000
+Sensitivity=24
 ; http://docs.rainmeter.net/manual-beta/plugins/audiolevel
 
 MusicPlayer=None
-; Music player process name
+; Music player process name, such as "VLC" (not "VLC.exe")
 
 FirstBandIndex=1
+; "0" band should be skipped for aesthetic purpose
+
+IdleAudioTimeout=1
+; How long before hiding the visualizer when no sound is playing
 
 ; Environment variables for settings window
 SkinGroup=Frost

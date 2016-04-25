@@ -3,6 +3,7 @@ Update=16
 DefaultUpdateDivider=-1
 Group=#SkinGroup#
 OnCloseAction=[!RefreshGroup #SkinGroup#]
+LeftMouseUpAction=#OpenSettingsWindow#
 
 ContextTitle="Open settings window"
 ContextAction=#OpenSettingsWindow#
@@ -23,27 +24,6 @@ EnvConfigPath=[!WriteKeyValue Variables ConfigPath "#CURRENTPATH##CURRENTFILE#" 
 EnvSettingsWindow=#EnvFlip##EnvHorizontal##EnvInvert#EnvChannel##EnvPort##EnvID##EnvConfig##EnvConfigPath#
 OpenSettingsWindow=#EnvSettingsWindow#[!ActivateConfig "#ROOTCONFIG#\SettingsWindow"][!Refresh "#ROOTCONFIG#\SettingsWindow"]
 
-[MeasureAudio]
-Measure=Plugin
-Plugin=AudioLevel
-Port=#Port#
-ID=#ID#
-RMSAttack=0
-RMSDecay=0
-RMSGain=1
-PeakAttack=0
-PeakDecay=0
-PeakGain=1
-FFTSize=#FFTSize#
-FFTOverlap=#FFTOverlap#
-FFTAttack=#FFTAttack#
-FFTDecay=#FFTDecay#
-Bands=#Bands#
-FreqMin=#FreqMin#
-FreqMax=#FreqMax#
-Sensitivity=#Sensitivity#
-UpdateDivider=1
-
 [DisableProcessCheck]
 Measure=String
 String=#MusicPlayer#
@@ -55,6 +35,13 @@ IfNotMatchAction=[!SetOption MeasureProcess UpdateDivider 62.5]
 Measure=Plugin
 Plugin=Process
 ProcessName=#MusicPlayer#.exe
+
+[IdleAudioTimeout]
+Measure=Calc
+Formula=(IdleAudioTimeout + 1)
+IfCondition=(IdleAudioTimeout = (Floor(62.5 * #IdleAudioTimeout#)))
+IfTrueAction=[!DisableMeasure MeasureAudio][!DisableMeasureGroup Audio][!DisableMeasure ScriptFrost][!DisableMeasure DynamicSensitivity][!DisableMeasure IdleAudioTimeout]
+UpdateDivider=1
 
 [Standby]
 Measure=Plugin
@@ -71,27 +58,39 @@ UpdateDivider=1
 
 ; Toggle measures/meters based on idle audio and music player running status
 IfCondition=((Standby > 0.00001) && ((DisableProcessCheck = 1) || (MeasureProcess = 1)))
-IfTrueAction=[!EnableMeasure MeasureAudio][!EnableMeasure ScriptFrost][!EnableMeasure DynamicSensitivity][!EnableMeasure DynamicFFTDecay][!ShowFade]
-IfFalseAction=[!DisableMeasure MeasureAudio][!DisableMeasure ScriptFrost][!DisableMeasure DynamicSensitivity][!DisableMeasure DynamicFFTDecay][!HideFade]
+IfTrueAction=[!DisableMeasure IdleAudioTimeout][!EnableMeasure MeasureAudio][!EnableMeasureGroup Audio][!EnableMeasure ScriptFrost][!EnableMeasure DynamicSensitivity]
+IfFalseAction=[!EnableMeasure IdleAudioTimeout]
+
+[MeasureAudio]
+Measure=Plugin
+Plugin=AudioLevel
+Port=#Port#
+ID=#ID#
+RMSAttack=0
+RMSDecay=0
+RMSGain=1
+PeakAttack=0
+PeakDecay=0
+PeakGain=1
+FFTSize=#FFTSize#
+FFTOverlap=(Min(#FFTOverlap#, (#FFTSize#-512)))
+FFTAttack=#FFTAttack#
+FFTDecay=#FFTDecay#
+Bands=#Bands#
+FreqMin=#FreqMin#
+FreqMax=#FreqMax#
+Sensitivity=#Sensitivity#
+UpdateDivider=1
 
 [DynamicSensitivity]
 Measure=Calc
-Formula=(#Sensitivity# - (MeasureAudio * 100 - #Sensitivity#))
-IfCondition=((DynamicSensitivity > #Sensitivity#) && (#LoudnessEqualization# = 1))
+Formula=(Max(#Sensitivity#, Min(Abs(20 * Log(MeasureAudio)) + Abs(20 * Log(0.5)), 0.5 * Abs(20 * Log(1/65535)))))
+IfCondition=(#LoudnessEqualization# = 1)
 IfTrueAction=[!SetOption MeasureAudio Sensitivity [DynamicSensitivity]]
 IfConditionMode=1
 UpdateDivider=1
-; Average over the past 3 seconds to prevent stuttering
-AverageSize=188
-
-[DynamicFFTDecay]
-Measure=Calc
-Formula=(#FFTDecay# + (MeasureAudio * 100 - #Sensitivity#) * 10)
-IfCondition=((DynamicSensitivity > #Sensitivity#) && (#LoudnessEqualization# = 1))
-IfTrueAction=[!SetOption MeasureAudio FFTDecay [DynamicFFTDecay]]
-IfConditionMode=1
-UpdateDivider=1
-AverageSize=188
+; Average over the past 0.5 seconds to prevent stuttering
+AverageSize=31
 
 @Include=#@#BandMeasures.inc
 @Include2=#@#BandMeters.inc

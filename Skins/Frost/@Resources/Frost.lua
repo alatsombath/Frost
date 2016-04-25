@@ -53,7 +53,7 @@ function Update()
       end
 	  spectrumSize = spectrumSize - 1
 	  if spectrumSize == 0 then
-	    return
+	    return 0
 	  end
     end
   end
